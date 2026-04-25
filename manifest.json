@@ -139,10 +139,11 @@
     },
     {
       "id": "reverse-proxy-caddy",
-      "description": "Caddyfile.prod (TLS + path routing)",
+      "description": "Caddyfile.prod + Caddyfile.staging (test-acme CA, staging.<domain>)",
       "category": "ops",
       "actions": [
-        { "type": "copy", "from": "assets/reverse-proxy/Caddyfile.prod.tpl", "to": "Caddyfile.prod" }
+        { "type": "copy", "from": "assets/reverse-proxy/Caddyfile.prod.tpl", "to": "Caddyfile.prod" },
+        { "type": "copy", "from": "assets/reverse-proxy/Caddyfile.staging.tpl", "to": "Caddyfile.staging" }
       ]
     },
     {

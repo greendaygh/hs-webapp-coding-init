@@ -2,6 +2,17 @@
 
 이 프로젝트의 모든 주요 변경사항은 이 파일에 기록됩니다. 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고, 버저닝은 [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [v0.1.3] - 2026-04-26
+
+Phase 3 — Staging stack (Let's Encrypt test-acme).
+
+### Added
+- **`Caddyfile.staging`** 자산: `staging.{{proxy_domain}}` 도메인 + Let's Encrypt **staging CA**(`acme-staging-v02`) 사용으로 prod 발급 rate-limit를 피하고 인증서 자동화/리허설을 안전하게 수행. 보안 헤더에 `X-Robots-Tag: noindex, nofollow` 추가 (검색 노출 방지).
+- **`assets/docker/docker-compose.staging.yml`** 자산: prod 스택과 동일 구성이지만 `restart: unless-stopped`, 컨테이너 접미사 `-staging`, `staging_port`(기본 8080) 매핑, `.env.staging` 사용, 데이터 디렉터리 `{{prod_data_dir}}/staging/...`로 격리.
+- **`scripts/start-staging.sh` / `scripts/stop-staging.sh`**: prod 스크립트와 동형이며, `validate-env.sh staging`을 선행 호출하여 `CHANGE_ME` placeholder가 있으면 fail-fast.
+- `reverse-proxy-caddy` 자산이 prod + staging 두 Caddyfile을 함께 설치하도록 확장 (별도 자산 분리 없이 fullstack 프리셋에 자동 포함).
+- **회귀 테스트 4건** 추가 (총 61개).
+
 ## [v0.1.2] - 2026-04-26
 
 Phase 2 — Reproducibility + Security harness.

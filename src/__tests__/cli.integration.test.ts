@@ -285,6 +285,46 @@ describe('CLI integration: webapp-fullstack init', () => {
     expect(req.toLowerCase()).toMatch(/pip[-_]audit/);
   });
 
+  // Phase 3 (v0.1.3) — Staging stack
+  it('Phase 3: Caddyfile.staging exists with test-acme CA + staging.<domain>', async () => {
+    const cf = path.join(tmp, 'Caddyfile.staging');
+    expect(await fileExists(cf)).toBe(true);
+    const txt = await readFile(cf);
+    // Let's Encrypt staging endpoint (acme-staging-v02 == "test-acme")
+    expect(txt).toMatch(/acme[-_]staging|test[-_]?acme|acme-staging-v02/);
+    expect(txt).toContain('staging.');
+    // 변수 누수 없음 (단, ${...} 형 환경 placeholder는 허용)
+    const stripped = txt.replace(/\$\{\{[^}]*\}\}/g, '');
+    expect(stripped).not.toMatch(/\{\{\w+\}\}/);
+  });
+
+  it('Phase 3: Caddyfile.prod does NOT use test-acme', async () => {
+    const cf = await readFile(path.join(tmp, 'Caddyfile.prod'));
+    expect(cf).not.toMatch(/acme[-_]staging|acme-staging-v02/);
+  });
+
+  it('Phase 3: docker-compose.staging.yml exists with staging suffix', async () => {
+    const dc = path.join(tmp, 'assets/docker/docker-compose.staging.yml');
+    expect(await fileExists(dc)).toBe(true);
+    const txt = await readFile(dc);
+    expect(txt).toMatch(/-staging\b/);
+    expect(txt).toContain('Caddyfile.staging');
+    expect(txt).toContain('.env.staging');
+  });
+
+  it('Phase 3: start-staging.sh / stop-staging.sh validate env and use staging compose', async () => {
+    const startP = path.join(tmp, 'scripts/start-staging.sh');
+    const stopP = path.join(tmp, 'scripts/stop-staging.sh');
+    expect(await fileExists(startP)).toBe(true);
+    expect(await fileExists(stopP)).toBe(true);
+    const start = await readFile(startP);
+    const stop = await readFile(stopP);
+    expect(start).toMatch(/validate-env\.sh\s+staging/);
+    expect(start).toContain('docker-compose.staging.yml');
+    expect(start).toContain('.env.staging');
+    expect(stop).toContain('docker-compose.staging.yml');
+  });
+
   // Phase 2 — CHANGE_ME fail-fast (production/staging는 거부)
   it('Phase 2: validate-env.sh fails fast on CHANGE_ME in production env file', async () => {
     const { execa } = await import('execa');
