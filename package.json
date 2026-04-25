@@ -1,6 +1,6 @@
 {
   "name": "hs-webapp-coding-init",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "FastAPI + React + MongoDB + Caddy 풀스택 부트스트래퍼 — Cursor TDD 룰 + DDD 스캐폴드 + Docker + CI 일괄 주입",
   "license": "MIT",
   "author": "greendaygh <kimhaseong@gmail.com>",

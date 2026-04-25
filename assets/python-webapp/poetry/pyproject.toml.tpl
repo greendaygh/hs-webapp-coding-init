@@ -24,6 +24,8 @@ ruff = "^0.6.9"
 mypy = "^1.11.0"
 factory-boy = "^3.3.0"
 faker = "^30.0.0"
+bandit = { extras = ["toml"], version = "^1.7" }
+pip-audit = "^2.7"
 
 [build-system]
 requires = ["poetry-core"]

@@ -2,6 +2,23 @@
 
 이 프로젝트의 모든 주요 변경사항은 이 파일에 기록됩니다. 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고, 버저닝은 [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [v0.1.2] - 2026-04-26
+
+Phase 2 — Reproducibility + Security harness.
+
+### Added
+- **Reproducibility**: `.tool-versions` 자산 추가 (asdf/mise 호환 — `nodejs {{node_version}}` / `python {{python_version}}`).
+- **Security 워크플로** (`.github/workflows/security.yml`): 4종 스캐너를 한 번에 실행하고 매주 월요일 정기 스캔.
+  - **gitleaks**: Git 이력 시크릿 누출 검사.
+  - **bandit**: Python SAST (백엔드 `{{app_module}}` 한정, `tests/` 제외).
+  - **pip-audit**: Python 의존성 CVE 검사 (`requirements.txt`/`pyproject.toml` 자동 인식, `--strict`).
+  - **npm audit**: 프론트엔드 의존성 CVE 검사 (`--audit-level=high`).
+- **bandit pre-commit hook**: 커밋 직전 백엔드 코드만 검사 (`-ll -ii`, `tests/` 제외) → 머지 전 빠른 피드백.
+- **백엔드 dev deps** 3종(poetry/pip/conda) 모두에 `bandit[toml]>=1.7`, `pip-audit>=2.7` 추가.
+- **`webapp-fullstack`/`webapp-fullstack-poetry`/`webapp-fullstack-conda` 프리셋**에 `repro-tool-versions` + `security-scan` 자산 포함 (기본 활성).
+- **CHANGE_ME fail-fast 회귀 테스트**: `scripts/validate-env.sh production`이 `CHANGE_ME` placeholder를 발견하면 비-0 종료하는지 검증 (이미 존재하던 동작에 회귀 방지).
+- **회귀 테스트 5건** 추가 (총 57개 통합/단위 테스트, 4건 신규 + 1건 회귀).
+
 ## [v0.1.1] - 2026-04-26
 
 Phase 1 — Observability + Data harness.

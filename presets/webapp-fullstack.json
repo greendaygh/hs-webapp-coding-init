@@ -23,6 +23,8 @@
     "ops-scripts",
     "env-multi",
     "ci-basic",
+    "repro-tool-versions",
+    "security-scan",
     "e2e-playwright",
     "docs-basic"
   ]

@@ -24,6 +24,8 @@ dev = [
   "mypy>=1.11",
   "factory-boy>=3.3",
   "faker>=30.0",
+  "bandit[toml]>=1.7",
+  "pip-audit>=2.7",
 ]
 
 [build-system]

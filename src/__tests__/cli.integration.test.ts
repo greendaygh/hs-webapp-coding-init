@@ -249,6 +249,58 @@ describe('CLI integration: webapp-fullstack init', () => {
     expect(req).toMatch(/factory[-_]boy/i);
     expect(req).toMatch(/faker/i);
   });
+
+  // Phase 2 (v0.1.2) — Reproducibility
+  it('Phase 2: project has .tool-versions with node and python', async () => {
+    const tv = path.join(tmp, '.tool-versions');
+    expect(await fileExists(tv)).toBe(true);
+    const txt = await readFile(tv);
+    expect(txt).toMatch(/^nodejs\s+\d+(\.\d+)*/m);
+    expect(txt).toMatch(/^python\s+\d+(\.\d+)*/m);
+    // 변수 치환 누수 없음
+    expect(txt).not.toContain('{{');
+  });
+
+  // Phase 2 (v0.1.2) — Security harness
+  it('Phase 2: .github/workflows/security.yml exists with scanners', async () => {
+    const ymlPath = path.join(tmp, '.github/workflows/security.yml');
+    expect(await fileExists(ymlPath)).toBe(true);
+    const yml = await readFile(ymlPath);
+    expect(yml.toLowerCase()).toContain('gitleaks');
+    expect(yml.toLowerCase()).toMatch(/bandit/);
+    expect(yml.toLowerCase()).toMatch(/(npm\s+audit|pnpm\s+audit)/);
+    expect(yml.toLowerCase()).toMatch(/pip[-_ ]audit/);
+    // schedule(주기 실행) + on push/pull_request 중 최소 schedule
+    expect(yml).toMatch(/schedule:/);
+  });
+
+  it('Phase 2: pre-commit config includes bandit', async () => {
+    const pc = await readFile(path.join(tmp, '.pre-commit-config.yaml'));
+    expect(pc.toLowerCase()).toContain('bandit');
+  });
+
+  it('Phase 2: backend dev deps include bandit and pip-audit', async () => {
+    const req = await readFile(path.join(tmp, 'backend/requirements-dev.txt'));
+    expect(req.toLowerCase()).toContain('bandit');
+    expect(req.toLowerCase()).toMatch(/pip[-_]audit/);
+  });
+
+  // Phase 2 — CHANGE_ME fail-fast (production/staging는 거부)
+  it('Phase 2: validate-env.sh fails fast on CHANGE_ME in production env file', async () => {
+    const { execa } = await import('execa');
+    // .env.production.example는 있지만 .env.production은 없음 → 만들어 CHANGE_ME 유지
+    const exampleProd = path.join(tmp, '.env.production.example');
+    const realProd = path.join(tmp, '.env.production');
+    await fs.copyFile(exampleProd, realProd);
+    const r = await execa('bash', ['scripts/validate-env.sh', 'production'], {
+      cwd: tmp,
+      reject: false,
+    });
+    // CHANGE_ME가 있으므로 비-0 종료 + 메시지에 CHANGE_ME 언급
+    expect(r.exitCode).not.toBe(0);
+    const out = `${r.stdout ?? ''}\n${r.stderr ?? ''}`;
+    expect(out).toContain('CHANGE_ME');
+  });
 });
 
 describe('CLI integration: idempotent re-run', () => {

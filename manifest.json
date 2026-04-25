@@ -171,6 +171,22 @@
       ]
     },
     {
+      "id": "repro-tool-versions",
+      "description": ".tool-versions (asdf/mise) — Node/Python 버전 고정",
+      "category": "quality",
+      "actions": [
+        { "type": "copy", "from": "assets/repro/.tool-versions.tpl", "to": ".tool-versions" }
+      ]
+    },
+    {
+      "id": "security-scan",
+      "description": "Security workflow (gitleaks + bandit + pip-audit + npm audit, schedule 포함)",
+      "category": "ci",
+      "actions": [
+        { "type": "copy", "from": "assets/ci/security.yml.tpl", "to": ".github/workflows/security.yml" }
+      ]
+    },
+    {
       "id": "e2e-playwright",
       "description": "Playwright E2E (config + smoke + helpers + fixtures)",
       "category": "e2e",

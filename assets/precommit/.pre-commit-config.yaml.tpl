@@ -15,6 +15,14 @@ repos:
         args: ["--fix"]
       - id: ruff-format
 
+  - repo: https://github.com/PyCQA/bandit
+    rev: "1.7.10"
+    hooks:
+      - id: bandit
+        name: bandit (security lint, backend only)
+        args: ["-q", "-ll", "-ii", "-x", "tests"]
+        files: ^{{backend_dir}}/{{app_module}}/.*\.py$
+
   - repo: local
     hooks:
       - id: pytest-quick
