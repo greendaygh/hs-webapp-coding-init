@@ -22,6 +22,8 @@ pytest-asyncio = "^0.24.0"
 pytest-cov = "^5.0.0"
 ruff = "^0.6.9"
 mypy = "^1.11.0"
+factory-boy = "^3.3.0"
+faker = "^30.0.0"
 
 [build-system]
 requires = ["poetry-core"]

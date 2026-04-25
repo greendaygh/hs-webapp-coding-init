@@ -211,6 +211,44 @@ describe('CLI integration: webapp-fullstack init', () => {
 
   // 이슈 #4 회귀: poetry preset에서 next-steps의 pip 우선 노출 회피
   // (이 테스트는 stdout을 검증하는 별도 testing block에서 다룸)
+
+  // Phase 1 (v0.1.1) — Observability harness
+  it('Phase 1: backend has logging_config (dictConfig)', async () => {
+    const lc = await readFile(path.join(tmp, 'backend/app/logging_config.py'));
+    expect(lc).toContain('dictConfig');
+    expect(lc.toLowerCase()).toMatch(/request[_-]?id/);
+  });
+
+  it('Phase 1: main.py wires logging_config and exposes dependency_checks for /health/ready', async () => {
+    const main = await readFile(path.join(tmp, 'backend/app/main.py'));
+    expect(main).toMatch(/from\s+app\.logging_config\s+import|app\.logging_config/);
+    expect(main).toMatch(/dependency_checks|check_dependencies/);
+    expect(main).toMatch(/health\/live/);
+    expect(main).toMatch(/health\/ready/);
+  });
+
+  it('Phase 1: frontend has ErrorBoundary component', async () => {
+    expect(await fileExists(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx'))).toBe(
+      true,
+    );
+    const eb = await readFile(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx'));
+    expect(eb).toMatch(/class\s+ErrorBoundary/);
+    expect(eb).toContain('componentDidCatch');
+  });
+
+  // Phase 1 (v0.1.1) — Data harness
+  it('Phase 1: backend tests/factories.py exists with factory_boy stub', async () => {
+    const fp = path.join(tmp, 'backend/tests/factories.py');
+    expect(await fileExists(fp)).toBe(true);
+    const txt = await readFile(fp);
+    expect(txt.toLowerCase()).toContain('factory');
+  });
+
+  it('Phase 1: backend dev deps include factory-boy and faker (pip)', async () => {
+    const req = await readFile(path.join(tmp, 'backend/requirements-dev.txt'));
+    expect(req).toMatch(/factory[-_]boy/i);
+    expect(req).toMatch(/faker/i);
+  });
 });
 
 describe('CLI integration: idempotent re-run', () => {

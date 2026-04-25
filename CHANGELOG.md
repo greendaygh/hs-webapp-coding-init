@@ -2,7 +2,17 @@
 
 이 프로젝트의 모든 주요 변경사항은 이 파일에 기록됩니다. 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고, 버저닝은 [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
-## [v0.1.0] - 2026-04-25
+## [v0.1.1] - 2026-04-26
+
+Phase 1 — Observability + Data harness.
+
+### Added
+- **Observability**: backend `app/logging_config.py` (dictConfig + Request ID context filter, dev=콘솔/그 외=JSON) 자산 추가, `main.py`가 부팅 시 `configure_logging()` 호출.
+- **`/health/ready` dependency check**: `register_dependency_check(app, "db", _ping)` 패턴으로 외부 의존성 검사를 등록하면, 모든 검사 통과 시 `200 {status: "ready"}` / 하나라도 실패 시 `503 {status: "degraded", checks: {...}}`.
+- **Frontend ErrorBoundary**: `src/components/ErrorBoundary.tsx` 자산 추가 (React 18 클래스 컴포넌트 + Sentry hook 자리).
+- **Data harness**: `tests/factories.py` factory_boy + faker 스텁 자산 + 백엔드 dev deps에 `factory-boy`, `faker` 추가 (poetry/pip/conda 3종 모두).
+- **회귀 테스트 5건** 추가 (총 52개 통합/단위 테스트).
+
 
 첫 공개 릴리스. FastAPI + React + MongoDB + Caddy 풀스택 부트스트래퍼.
 

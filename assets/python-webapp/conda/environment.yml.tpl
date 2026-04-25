@@ -16,3 +16,5 @@ dependencies:
       - pytest-cov>=5.0
       - ruff>=0.6.9
       - mypy>=1.11
+      - factory-boy>=3.3
+      - faker>=30.0
