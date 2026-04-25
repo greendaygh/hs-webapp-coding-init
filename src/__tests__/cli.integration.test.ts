@@ -228,9 +228,9 @@ describe('CLI integration: webapp-fullstack init', () => {
   });
 
   it('Phase 1: frontend has ErrorBoundary component', async () => {
-    expect(await fileExists(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx'))).toBe(
-      true,
-    );
+    expect(
+      await fileExists(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx')),
+    ).toBe(true);
     const eb = await readFile(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx'));
     expect(eb).toMatch(/class\s+ErrorBoundary/);
     expect(eb).toContain('componentDidCatch');
@@ -323,6 +323,41 @@ describe('CLI integration: webapp-fullstack init', () => {
     expect(start).toContain('docker-compose.staging.yml');
     expect(start).toContain('.env.staging');
     expect(stop).toContain('docker-compose.staging.yml');
+  });
+
+  // Phase 4 (v0.1.4) — Deploy CI workflows
+  it('Phase 4: deploy-staging.yml exists with SSH + staging compose', async () => {
+    const yml = path.join(tmp, '.github/workflows/deploy-staging.yml');
+    expect(await fileExists(yml)).toBe(true);
+    const txt = await readFile(yml);
+    expect(txt.toLowerCase()).toContain('ssh');
+    expect(txt).toContain('docker-compose.staging.yml');
+    // 트리거: develop 브랜치 또는 staging-* 태그
+    expect(txt).toMatch(/develop|staging/);
+    // 시크릿 참조
+    expect(txt).toContain('DEPLOY_SSH_HOST');
+    expect(txt).toContain('DEPLOY_SSH_KEY');
+    expect(txt).toContain('DEPLOY_PATH');
+  });
+
+  it('Phase 4: deploy-production.yml exists with tag trigger + manual approval guard', async () => {
+    const yml = path.join(tmp, '.github/workflows/deploy-production.yml');
+    expect(await fileExists(yml)).toBe(true);
+    const txt = await readFile(yml);
+    expect(txt.toLowerCase()).toContain('ssh');
+    expect(txt).toContain('docker-compose.prod.yml');
+    // v* 태그 또는 workflow_dispatch
+    expect(txt).toMatch(/tags:\s*\n\s*-\s*['"]?v\*|workflow_dispatch:/);
+    // production 환경 보호 (수동 승인 게이트로 사용 가능)
+    expect(txt).toMatch(/environment:\s*\n?\s*name:\s*production|environment:\s*production/);
+  });
+
+  it('Phase 4: DEPLOYMENT.md documents required secrets', async () => {
+    const md = await readFile(path.join(tmp, 'docs/DEPLOYMENT.md'));
+    expect(md).toContain('DEPLOY_SSH_HOST');
+    expect(md).toContain('DEPLOY_SSH_USER');
+    expect(md).toContain('DEPLOY_SSH_KEY');
+    expect(md).toContain('DEPLOY_PATH');
   });
 
   // Phase 2 — CHANGE_ME fail-fast (production/staging는 거부)

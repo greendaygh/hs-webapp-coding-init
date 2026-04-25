@@ -2,6 +2,19 @@
 
 이 프로젝트의 모든 주요 변경사항은 이 파일에 기록됩니다. 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고, 버저닝은 [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [v0.1.4] - 2026-04-26
+
+Phase 4 — Deploy CI workflows.
+
+### Added
+- **`.github/workflows/deploy-staging.yml`** 자산: `develop` 브랜치 푸시 또는 `staging-*` 태그/수동 실행 → SSH rsync + `docker compose -f assets/docker/docker-compose.staging.yml up -d --build` + `/health/live` 스모크 테스트. `staging` Environment에 묶여 검토자 게이트 적용 가능.
+- **`.github/workflows/deploy-production.yml`** 자산: `v*` 태그 푸시(또는 `workflow_dispatch`로 ref 지정) → 원격 `validate-env.sh production`으로 CHANGE_ME 차단 → rsync + `docker compose -f docker-compose.prod.yml up -d --build` + `/health/live` 스모크. **`production` Environment**의 Required reviewers를 활용해 수동 승인 게이트로 사용 가능.
+- **`docs/DEPLOYMENT.md`** 갱신:
+  - 시크릿 4종(`DEPLOY_SSH_HOST` / `DEPLOY_SSH_USER` / `DEPLOY_SSH_KEY` / `DEPLOY_PATH`) 등록 절차 + GitHub Environment 검토자 설정 방법.
+  - 서버 사전 준비(deploy 사용자 생성, docker 그룹, `DEPLOY_PATH` 디렉터리, .env.production 채움) 체크리스트.
+- `webapp-fullstack` 3종 프리셋(pip/poetry/conda)에 `deploy-staging` + `deploy-production` 자산 자동 포함.
+- **회귀 테스트 3건** 추가 (총 64개).
+
 ## [v0.1.3] - 2026-04-26
 
 Phase 3 — Staging stack (Let's Encrypt test-acme).

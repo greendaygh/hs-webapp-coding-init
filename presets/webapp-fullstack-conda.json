@@ -25,6 +25,8 @@
     "ci-basic",
     "repro-tool-versions",
     "security-scan",
+    "deploy-staging",
+    "deploy-production",
     "e2e-playwright",
     "docs-basic"
   ]

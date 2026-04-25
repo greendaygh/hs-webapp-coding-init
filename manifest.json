@@ -188,6 +188,22 @@
       ]
     },
     {
+      "id": "deploy-staging",
+      "description": "Deploy staging workflow (SSH rsync → docker compose up; develop/staging-* 트리거)",
+      "category": "ci",
+      "actions": [
+        { "type": "copy", "from": "assets/ci/deploy-staging.yml.tpl", "to": ".github/workflows/deploy-staging.yml" }
+      ]
+    },
+    {
+      "id": "deploy-production",
+      "description": "Deploy production workflow (v* 태그 트리거 + GitHub Environment 수동 승인 게이트)",
+      "category": "ci",
+      "actions": [
+        { "type": "copy", "from": "assets/ci/deploy-production.yml.tpl", "to": ".github/workflows/deploy-production.yml" }
+      ]
+    },
+    {
       "id": "e2e-playwright",
       "description": "Playwright E2E (config + smoke + helpers + fixtures)",
       "category": "e2e",
