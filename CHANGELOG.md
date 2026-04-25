@@ -2,6 +2,27 @@
 
 이 프로젝트의 모든 주요 변경사항은 이 파일에 기록됩니다. 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고, 버저닝은 [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [v0.2.0] - 2026-04-26
+
+Phase 5 — Onboarding 풀세트. 4번의 patch 릴리스(v0.1.1~v0.1.4)에 누적된 v0.2 하네스를 문서·진입점 차원에서 정리하는 minor 범프.
+
+### Added
+- **`Makefile`** 자산: 하나의 진입점에서 `dev`/`db`/`test`/`lint`/`typecheck`/`audit`/`security`/`staging`/`prod`/`validate`/`backup`/`clean` 실행. `make help`로 전체 타겟 자동 출력.
+- **`docs/ARCHITECTURE.md`** 자산: DDD 4층(api/application/domain/infrastructure) 의존 방향, features 기반 React 구조, 배포 토폴로지(dev/staging/prod), Phase 1~4 하네스(Observability/Security/Deploy)의 코드 차원 위치를 한 눈에.
+- **`docs/CONTRIBUTING.md`** 자산: TDD Red-Green-Refactor, 브랜치/커밋/PR 규칙, 코드 스타일 단일 출처(ruff/prettier), 새 환경 변수 추가 4단계 체크리스트, 시크릿/보안 정책.
+- **`README.en.md`** 자산: 영문 Quick Start + Make 타겟 표 + 워크플로/배포 요약. 한국어 README와 짝.
+- **`docs/HARNESS.md`** 갱신: Test에 데이터 팩토리, Edge에 Caddyfile.staging, Deploy에 SSH CI, Observability에 logging_config + Request ID + ErrorBoundary, Security 행 신규(gitleaks/bandit/pip-audit/npm audit), Reproducibility 행에 `.tool-versions`. 사용 패턴에 staging 리허설/태그 푸시 자동 배포 추가.
+- **`docs/GETTING_STARTED.md`** 갱신: 모든 단계를 `make ...`로 통일, asdf/mise 안내, staging 리허설 6단계, 보안/품질 점검 7단계, ARCHITECTURE/CONTRIBUTING 링크 추가.
+- 패키지 자체 `README.md` v2: 8개 하네스 표, 새 자산(Phase 1~5) 디렉터리 트리, 보안 정책 4항.
+
+### Changed
+- `docs-basic` 자산이 `README.en.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`를 함께 설치.
+- `webapp-fullstack`/`-poetry`/`-conda` 프리셋에 `onboarding-makefile` 자산 자동 포함.
+
+### Notes
+- v0.1.x 시리즈에서 누적된 자산을 minor 범프로 마킹하는 의미. 새 npm 사용자는 `npm i -g hs-webapp-coding-init@0.2.0` 또는 `npx hs-webapp-coding-init@0.2.0 init`으로 풀세트 사용 가능.
+- 회귀 테스트 6건 추가 (총 70개).
+
 ## [v0.1.4] - 2026-04-26
 
 Phase 4 — Deploy CI workflows.

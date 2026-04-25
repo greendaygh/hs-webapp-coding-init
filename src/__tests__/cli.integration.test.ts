@@ -228,9 +228,9 @@ describe('CLI integration: webapp-fullstack init', () => {
   });
 
   it('Phase 1: frontend has ErrorBoundary component', async () => {
-    expect(
-      await fileExists(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx')),
-    ).toBe(true);
+    expect(await fileExists(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx'))).toBe(
+      true,
+    );
     const eb = await readFile(path.join(tmp, 'frontend/src/components/ErrorBoundary.tsx'));
     expect(eb).toMatch(/class\s+ErrorBoundary/);
     expect(eb).toContain('componentDidCatch');
@@ -358,6 +358,60 @@ describe('CLI integration: webapp-fullstack init', () => {
     expect(md).toContain('DEPLOY_SSH_USER');
     expect(md).toContain('DEPLOY_SSH_KEY');
     expect(md).toContain('DEPLOY_PATH');
+  });
+
+  // Phase 5 (v0.2.0) — Onboarding 풀세트
+  it('Phase 5: Makefile exists with key targets', async () => {
+    const mk = path.join(tmp, 'Makefile');
+    expect(await fileExists(mk)).toBe(true);
+    const txt = await readFile(mk);
+    // 주요 타겟: dev / db / test / lint / staging / prod
+    for (const tgt of ['dev:', 'db:', 'test:', 'lint:', 'staging:', 'prod:']) {
+      expect(txt).toContain(tgt);
+    }
+    // .PHONY 선언이 있어야 자식 디렉터리 충돌 회피
+    expect(txt).toContain('.PHONY');
+  });
+
+  it('Phase 5: docs/ARCHITECTURE.md exists with DDD + features', async () => {
+    const fp = path.join(tmp, 'docs/ARCHITECTURE.md');
+    expect(await fileExists(fp)).toBe(true);
+    const txt = await readFile(fp);
+    expect(txt.toLowerCase()).toMatch(/ddd|domain[- ]driven/);
+    expect(txt.toLowerCase()).toContain('features');
+  });
+
+  it('Phase 5: docs/CONTRIBUTING.md exists with TDD workflow', async () => {
+    const fp = path.join(tmp, 'docs/CONTRIBUTING.md');
+    expect(await fileExists(fp)).toBe(true);
+    const txt = await readFile(fp);
+    expect(txt.toLowerCase()).toMatch(/tdd|red.*green.*refactor/i);
+    expect(txt.toLowerCase()).toContain('pull request');
+  });
+
+  it('Phase 5: README.en.md exists in English', async () => {
+    const fp = path.join(tmp, 'README.en.md');
+    expect(await fileExists(fp)).toBe(true);
+    const txt = await readFile(fp);
+    expect(txt).toMatch(/Quick Start|Getting Started/);
+    // 한글이 거의 없어야 영어 본문임이 확실
+    const koreanChars = (txt.match(/[가-힣]/g) ?? []).length;
+    expect(koreanChars).toBeLessThan(20);
+  });
+
+  it('Phase 5: HARNESS.md reflects Phase 1-4 (Security/Deploy/Staging rows)', async () => {
+    const txt = await readFile(path.join(tmp, 'docs/HARNESS.md'));
+    expect(txt.toLowerCase()).toContain('security');
+    expect(txt.toLowerCase()).toContain('deploy');
+    expect(txt.toLowerCase()).toContain('staging');
+    // 새 자산 키워드
+    expect(txt).toMatch(/gitleaks|bandit|pip-audit|npm audit/i);
+  });
+
+  it('Phase 5: GETTING_STARTED.md mentions staging stack and Makefile', async () => {
+    const txt = await readFile(path.join(tmp, 'docs/GETTING_STARTED.md'));
+    expect(txt.toLowerCase()).toContain('staging');
+    expect(txt).toMatch(/make\s+\w+|Makefile/);
   });
 
   // Phase 2 — CHANGE_ME fail-fast (production/staging는 거부)

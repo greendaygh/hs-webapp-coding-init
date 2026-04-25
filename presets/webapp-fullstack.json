@@ -28,6 +28,7 @@
     "deploy-staging",
     "deploy-production",
     "e2e-playwright",
-    "docs-basic"
+    "docs-basic",
+    "onboarding-makefile"
   ]
 }
