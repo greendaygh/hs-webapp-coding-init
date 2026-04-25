@@ -1,0 +1,22 @@
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = [
+  "E", "F", "W",   # pycodestyle / pyflakes / pycodestyle-warnings
+  "I",             # isort
+  "B",             # flake8-bugbear
+  "UP",            # pyupgrade
+  "SIM",           # flake8-simplify
+  "C4",            # flake8-comprehensions
+  "ARG",           # flake8-unused-arguments
+]
+ignore = ["E501"]  # 줄 길이는 formatter에 위임
+
+[lint.per-file-ignores]
+"**/tests/**/*" = ["ARG", "S101"]
+"**/__init__.py" = ["F401"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

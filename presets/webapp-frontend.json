@@ -1,0 +1,15 @@
+{
+  "id": "webapp-frontend",
+  "description": "React + Vite 프론트엔드만 (features + MSW)",
+  "assets": [
+    "cursor-rules",
+    "gitignore-base",
+    "lint-format",
+    "ts-base",
+    "webapp-frontend",
+    "shadcn",
+    "env-multi",
+    "ci-basic",
+    "docs-basic"
+  ]
+}

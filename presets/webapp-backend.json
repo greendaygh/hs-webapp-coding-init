@@ -1,0 +1,18 @@
+{
+  "id": "webapp-backend",
+  "description": "FastAPI 백엔드만 (DDD + tests + pip)",
+  "defaults": { "db_kind": "mongodb" },
+  "assets": [
+    "cursor-rules",
+    "gitignore-base",
+    "data-volumes",
+    "lint-format",
+    "ts-base",
+    "webapp-backend",
+    "python-webapp-pip",
+    "pytest-config",
+    "env-multi",
+    "ci-basic",
+    "docs-basic"
+  ]
+}

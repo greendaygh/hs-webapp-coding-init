@@ -1,0 +1,5 @@
+{
+  "id": "cursor-rules-only",
+  "description": "Cursor rules만 (TDD/auto-versioning)",
+  "assets": ["cursor-rules"]
+}

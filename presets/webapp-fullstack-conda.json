@@ -1,0 +1,29 @@
+{
+  "id": "webapp-fullstack-conda",
+  "description": "webapp-fullstack + Conda (environment.yml)",
+  "defaults": {
+    "db_kind": "mongodb",
+    "enable_shadcn": "true",
+    "enable_msw": "true"
+  },
+  "assets": [
+    "cursor-rules",
+    "gitignore-base",
+    "data-volumes",
+    "lint-format",
+    "ts-base",
+    "precommit",
+    "webapp-backend",
+    "python-webapp-conda",
+    "pytest-config",
+    "webapp-frontend",
+    "shadcn",
+    "docker-compose",
+    "reverse-proxy-caddy",
+    "ops-scripts",
+    "env-multi",
+    "ci-basic",
+    "e2e-playwright",
+    "docs-basic"
+  ]
+}

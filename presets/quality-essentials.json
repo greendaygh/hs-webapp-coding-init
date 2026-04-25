@@ -1,0 +1,11 @@
+{
+  "id": "quality-essentials",
+  "description": "lint/format/precommit + cursor-rules + base gitignore",
+  "assets": [
+    "cursor-rules",
+    "gitignore-base",
+    "lint-format",
+    "ts-base",
+    "precommit"
+  ]
+}

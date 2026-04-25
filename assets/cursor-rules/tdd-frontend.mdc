@@ -1,0 +1,40 @@
+---
+description: Frontend TypeScript TDD 규칙 - Vitest + React Testing Library 패턴 및 실행 방법
+globs: {{frontend_dir}}/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Frontend TDD (Vitest)
+
+## 테스트 파일 위치 및 네이밍
+
+- 대상 파일과 같은 디렉터리의 `__tests__/` 폴더에 배치
+- 네이밍: `<Component>.test.tsx` 또는 `<module>.test.ts`
+- 예시: `{{frontend_dir}}/src/components/__tests__/App.test.tsx`
+
+## 테스트 실행
+
+```bash
+cd {{frontend_dir}} && npx vitest run --reporter=verbose
+
+cd {{frontend_dir}} && npx vitest run src/components/__tests__/<file>.test.tsx
+
+cd {{frontend_dir}} && npx vitest --reporter=verbose
+
+cd {{frontend_dir}} && npx vitest run --coverage
+```
+
+## 테스트 작성 패턴
+
+- vitest globals 활성화 상태: `describe`, `it`, `expect`, `vi` 등을 import 없이 사용
+- 컴포넌트 테스트: `@testing-library/react`의 `render`, `screen`, `waitFor` 사용
+- 사용자 이벤트: `@testing-library/user-event`의 `userEvent.setup()` 사용
+- API 모킹: `{{frontend_dir}}/src/mocks/` 의 MSW 핸들러 활용 (server lifecycle은 `src/test/setup.ts`에서 관리)
+
+## 규칙
+
+- happy-dom 환경에서 실행 (브라우저 API 모킹이 필요할 수 있음)
+- API 호출은 MSW 핸들러로 모킹하고, 직접 fetch/axios를 mock하지 않는다
+- 컴포넌트 테스트는 구현 세부사항이 아닌 사용자 행동 기준으로 작성한다
+- E2E 테스트(`e2e/`)는 Playwright로 별도 관리한다
+- 새 기능은 반드시 RED 테스트(실패하는 테스트) 부터 작성 (TDD)

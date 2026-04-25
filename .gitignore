@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.nyc_output/
+*.log
+.DS_Store
+/.env
+/.env.*
+!/.env.example
+.tsbuildinfo
+.vscode/
+.idea/
+*.tgz
+.npm/
+.cursor/

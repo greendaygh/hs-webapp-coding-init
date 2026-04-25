@@ -1,0 +1,38 @@
+---
+description: Backend Python TDD 규칙 - pytest 기반 테스트 패턴 및 실행 방법
+globs: {{backend_dir}}/**/*.py
+alwaysApply: false
+---
+
+# Backend TDD (pytest)
+
+## 테스트 파일 위치 및 네이밍
+
+- 단위 테스트: `{{backend_dir}}/tests/unit/test_<module>.py`
+- 통합 테스트: `{{backend_dir}}/tests/integration/test_<feature>_api.py`
+- 테스트 픽스처 데이터: `{{backend_dir}}/tests/fixtures/`
+
+## 테스트 실행
+
+```bash
+cd {{backend_dir}} && python -m pytest tests/ -x -v -m "not slow"
+
+cd {{backend_dir}} && python -m pytest tests/unit/test_<module>.py -x -v
+
+cd {{backend_dir}} && python -m pytest tests/ -x -v --cov={{app_module}} --cov-report=term-missing
+```
+
+## 공유 픽스처 ({{backend_dir}}/tests/conftest.py)
+
+- `fixtures_path` — `{{backend_dir}}/tests/fixtures/` 경로
+- `test_settings` — 테스트용 Settings (tmp_path, test DB 격리)
+- `app` — FastAPI 앱 인스턴스 (테스트 DB 자동 정리)
+- `client` — httpx AsyncClient (비동기 API 호출용)
+
+## 규칙
+
+- `asyncio_mode = auto`이므로 async 테스트에 `@pytest.mark.asyncio` 불필요
+- 외부 서비스(LLM, DB, Redis)를 호출하는 테스트는 `@pytest.mark.slow` 또는 `@pytest.mark.integration` 마커 사용
+- 외부 서비스는 mock/patch 또는 testcontainers로 격리
+- Pydantic 모델 검증은 유효/무효 입력 모두 테스트
+- 새 기능은 반드시 RED 테스트(실패하는 테스트) 부터 작성 (TDD)

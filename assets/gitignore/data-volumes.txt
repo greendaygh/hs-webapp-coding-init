@@ -1,0 +1,5 @@
+# DB 데이터/백업 (DB 컨테이너 영속 디렉터리)
+data/
+backups/
+{{mongodb_data_dir_dev}}
+{{redis_data_dir_dev}}

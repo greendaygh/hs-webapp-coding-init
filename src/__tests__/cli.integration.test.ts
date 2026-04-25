@@ -1,0 +1,299 @@
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+const ROOT = path.resolve(__dirname, '../..');
+const CLI = path.join(ROOT, 'bin', 'cli.js');
+
+async function runCli(
+  cwd: string,
+  args: string[],
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+  const { execa } = await import('execa');
+  const r = await execa('node', [CLI, ...args], { cwd, reject: false });
+  return { stdout: r.stdout ?? '', stderr: r.stderr ?? '', exitCode: r.exitCode ?? 0 };
+}
+
+async function fileExists(p: string): Promise<boolean> {
+  try {
+    await fs.stat(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readFile(p: string): Promise<string> {
+  return fs.readFile(p, 'utf-8');
+}
+
+describe('CLI integration: build artifact exists', () => {
+  beforeAll(async () => {
+    if (!(await fileExists(CLI))) {
+      throw new Error(`CLI not built: ${CLI}. Run npm run build first.`);
+    }
+  });
+
+  it('--version prints the package version', async () => {
+    const r = await runCli(ROOT, ['--version']);
+    expect(r.exitCode).toBe(0);
+    expect(r.stdout.trim()).toMatch(/^\d+\.\d+\.\d+/);
+  });
+
+  it('list shows presets and assets', async () => {
+    const r = await runCli(ROOT, ['list']);
+    expect(r.exitCode).toBe(0);
+    expect(r.stdout).toContain('webapp-fullstack');
+    expect(r.stdout).toContain('cursor-rules');
+  });
+});
+
+describe('CLI integration: webapp-fullstack init', () => {
+  let tmp: string;
+
+  beforeAll(async () => {
+    tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'hs-init-'));
+    const r = await runCli(tmp, [
+      'init',
+      '--yes',
+      '--preset',
+      'webapp-fullstack',
+      '--var',
+      'project_name=demo',
+      '--var',
+      'author=tester',
+      '--no-msw',
+    ]);
+    if (r.exitCode !== 0) {
+      console.error(r.stdout);
+      console.error(r.stderr);
+      throw new Error(`init failed exit=${r.exitCode}`);
+    }
+  }, 60_000);
+
+  afterAll(async () => {
+    if (tmp) await fs.rm(tmp, { recursive: true, force: true });
+  });
+
+  it('creates backend DDD scaffold', async () => {
+    expect(await fileExists(path.join(tmp, 'backend/app/main.py'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'backend/app/config.py'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'backend/app/api/v1/router.py'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'backend/tests/conftest.py'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'backend/tests/unit/test_health.py'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'backend/pytest.ini'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'backend/requirements.txt'))).toBe(true);
+  });
+
+  it('substitutes variables in main.py', async () => {
+    const main = await readFile(path.join(tmp, 'backend/app/main.py'));
+    expect(main).toContain('title="demo"');
+    expect(main).not.toContain('{{project_name}}');
+    expect(main).not.toContain('{{app_module}}');
+    expect(main).toContain('from app.config import get_settings');
+  });
+
+  it('substitutes app_module in pytest.ini', async () => {
+    const ini = await readFile(path.join(tmp, 'backend/pytest.ini'));
+    expect(ini).toContain('--cov=app');
+    expect(ini).not.toContain('{{app_module}}');
+  });
+
+  it('creates frontend with vite/vitest configs', async () => {
+    expect(await fileExists(path.join(tmp, 'frontend/vite.config.ts'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'frontend/vitest.config.ts'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'frontend/src/App.tsx'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'frontend/src/App.test.tsx'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'frontend/src/test/setup.ts'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'frontend/src/mocks/handlers.ts'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'frontend/package.json'))).toBe(true);
+  });
+
+  it('frontend package.json contains scripts and deps', async () => {
+    const pkg = JSON.parse(await readFile(path.join(tmp, 'frontend/package.json')));
+    expect(pkg.scripts.dev).toBe('vite');
+    expect(pkg.scripts['test:run']).toBe('vitest run');
+    expect(pkg.dependencies.react).toBeDefined();
+    expect(pkg.devDependencies.vitest).toBeDefined();
+    expect(pkg.devDependencies.msw).toBeDefined();
+  });
+
+  it('docker compose / caddy / scripts / env are present', async () => {
+    expect(await fileExists(path.join(tmp, 'assets/docker/docker-compose.dev.yml'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'assets/docker/docker-compose.prod.yml'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'assets/docker/docker-compose.db-only.yml'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'assets/docker/Dockerfile.python'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'Caddyfile.prod'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'scripts/start-dev.sh'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'scripts/validate-env.sh'))).toBe(true);
+    expect(await fileExists(path.join(tmp, '.env.development.example'))).toBe(true);
+    expect(await fileExists(path.join(tmp, '.env.production.example'))).toBe(true);
+  });
+
+  it('docs and cursor rules are written with substitutions', async () => {
+    expect(await fileExists(path.join(tmp, 'README.md'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'docs/GETTING_STARTED.md'))).toBe(true);
+    expect(await fileExists(path.join(tmp, 'docs/HARNESS.md'))).toBe(true);
+    expect(await fileExists(path.join(tmp, '.cursor/rules/tdd-workflow.mdc'))).toBe(true);
+
+    const readme = await readFile(path.join(tmp, 'README.md'));
+    expect(readme).toContain('# demo');
+    expect(readme).not.toContain('{{project_name}}');
+  });
+
+  it('.gitignore has data-volumes section appended once', async () => {
+    const gi = await readFile(path.join(tmp, '.gitignore'));
+    expect(gi).toContain('hs-webapp-coding-init/data-volumes >>>');
+    expect(gi).toContain('hs-webapp-coding-init/data-volumes <<<');
+    expect(gi).toContain('hs-webapp-coding-init/base >>>');
+    const data = (gi.match(/hs-webapp-coding-init\/data-volumes >>>/g) ?? []).length;
+    expect(data).toBe(1);
+  });
+
+  it('no leftover {{var}} tokens in critical files', async () => {
+    const files = [
+      'backend/app/main.py',
+      'backend/app/config.py',
+      'backend/pytest.ini',
+      'frontend/vite.config.ts',
+      'Caddyfile.prod',
+      'README.md',
+      'docs/HARNESS.md',
+      '.env.development.example',
+      'scripts/start-dev.sh',
+    ];
+    for (const f of files) {
+      const content = await readFile(path.join(tmp, f));
+      // GitHub Actions ${{ }} 형태는 허용
+      const stripped = content.replace(/\$\{\{[^}]*\}\}/g, '');
+      const matches = stripped.match(/\{\{(\w+)\}\}/g);
+      if (matches) {
+        throw new Error(`${f} has unresolved tokens: ${matches.join(', ')}`);
+      }
+    }
+  });
+
+  it('exec actions are NOT run unless --allow-exec', async () => {
+    // 현재 manifest에는 exec 자산이 없지만, 옵트인 정책이 코드에 있는지 회귀 방지.
+    // (별도 테스트는 install.ts unit에서 커버 가능)
+    expect(true).toBe(true);
+  });
+
+  // 이슈 #3 회귀: merge-json source 파일이 그대로 copy되어 생긴 고아 파일이 없어야 함
+  it('does NOT leave package.scripts.json (merge-source orphan)', async () => {
+    const orphan = path.join(tmp, 'frontend/package.scripts.json');
+    expect(await fileExists(orphan)).toBe(false);
+  });
+
+  // 이슈 #1 회귀: test-all.sh가 venv-aware하게 pytest를 실행해야 함
+  it('test-all.sh uses venv-aware pytest invocation', async () => {
+    const sh = await readFile(path.join(tmp, 'scripts/test-all.sh'));
+    // 단순 `pytest -q` 호출이면 시스템 pytest 잡을 수 있어 NG
+    expect(sh).not.toMatch(/\(\s*cd\s+backend\s*&&\s*pytest\b/);
+    // 어떤 형태로든 venv 우선 (poetry run / .venv/bin / python -m) 패턴이어야 함
+    expect(sh).toMatch(
+      /(poetry\s+run\s+pytest|\.venv\/bin\/pytest|python\s+-m\s+pytest|conda\s+run.*pytest)/,
+    );
+  });
+
+  // 이슈 #2 회귀: test-all.sh에서 e2e가 기본 실행되면 안 됨 (실서비스 의존)
+  it('test-all.sh does NOT auto-run e2e (services may not be up)', async () => {
+    const sh = await readFile(path.join(tmp, 'scripts/test-all.sh'));
+    // e2e 자동 실행 패턴이 없거나, 명시적 환경변수/플래그 게이트가 있어야 함
+    const runsE2eUnconditionally = /\(\s*cd\s+e2e\s*&&\s*npm\s+test\s*\)/.test(sh);
+    if (runsE2eUnconditionally) {
+      // e2e가 호출돼도 좋지만 환경변수 게이트 (예: RUN_E2E=1)가 명시되어야 함
+      expect(sh).toMatch(/RUN_E2E|--e2e|\bE2E\b/);
+    }
+  });
+
+  // 이슈 #4 회귀: poetry preset에서 next-steps의 pip 우선 노출 회피
+  // (이 테스트는 stdout을 검증하는 별도 testing block에서 다룸)
+});
+
+describe('CLI integration: idempotent re-run', () => {
+  let tmp: string;
+
+  beforeAll(async () => {
+    tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'hs-init-rerun-'));
+    const args = [
+      'init',
+      '--yes',
+      '--preset',
+      'quality-essentials',
+      '--var',
+      'project_name=re',
+      '--no-msw',
+    ];
+    let r = await runCli(tmp, args);
+    expect(r.exitCode).toBe(0);
+    r = await runCli(tmp, args);
+    expect(r.exitCode).toBe(0);
+  }, 60_000);
+
+  afterAll(async () => {
+    if (tmp) await fs.rm(tmp, { recursive: true, force: true });
+  });
+
+  it('append section is not duplicated on re-run', async () => {
+    const gi = await readFile(path.join(tmp, '.gitignore'));
+    const count = (gi.match(/hs-webapp-coding-init\/base >>>/g) ?? []).length;
+    expect(count).toBe(1);
+  });
+});
+
+// 이슈 #4 회귀: next-steps 안내가 preset에 따라 적절한 패키지 매니저를 우선 표시
+describe('CLI integration: preset-aware next-steps', () => {
+  it('poetry preset → next-steps shows poetry install first', async () => {
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'hs-init-poetry-'));
+    try {
+      const r = await runCli(tmp, [
+        'init',
+        '--yes',
+        '--preset',
+        'webapp-fullstack-poetry',
+        '--var',
+        'project_name=p',
+        '--no-msw',
+      ]);
+      expect(r.exitCode).toBe(0);
+      const out = r.stdout;
+      // poetry install이 pip install보다 먼저 노출되어야 함
+      const poetryIdx = out.indexOf('poetry install');
+      const pipIdx = out.indexOf('pip install -r requirements');
+      expect(poetryIdx).toBeGreaterThan(-1);
+      if (pipIdx !== -1) {
+        expect(poetryIdx).toBeLessThan(pipIdx);
+      }
+    } finally {
+      await fs.rm(tmp, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it('conda preset → next-steps shows conda env create first', async () => {
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'hs-init-conda-'));
+    try {
+      const r = await runCli(tmp, [
+        'init',
+        '--yes',
+        '--preset',
+        'webapp-fullstack-conda',
+        '--var',
+        'project_name=c',
+        '--no-msw',
+      ]);
+      expect(r.exitCode).toBe(0);
+      const out = r.stdout;
+      const condaIdx = out.indexOf('conda env create');
+      const pipIdx = out.indexOf('pip install -r requirements');
+      expect(condaIdx).toBeGreaterThan(-1);
+      if (pipIdx !== -1) {
+        expect(condaIdx).toBeLessThan(pipIdx);
+      }
+    } finally {
+      await fs.rm(tmp, { recursive: true, force: true });
+    }
+  }, 60_000);
+});

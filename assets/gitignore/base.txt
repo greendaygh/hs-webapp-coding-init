@@ -1,0 +1,43 @@
+# Node
+node_modules/
+dist/
+build/
+.pnpm-store/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.eggs/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# IDE / OS
+.idea/
+.vscode/*
+!.vscode/settings.json.example
+.DS_Store
+Thumbs.db
+
+# Logs / pids
+{{log_dir}}/
+*.log
+*.pid
+
+# Env (real values must never be committed)
+.env
+.env.*
+!.env.*.example
+
+# Build artifacts
+coverage/
+playwright-report/
+test-results/

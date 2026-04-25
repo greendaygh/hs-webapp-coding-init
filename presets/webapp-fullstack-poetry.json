@@ -1,0 +1,29 @@
+{
+  "id": "webapp-fullstack-poetry",
+  "description": "webapp-fullstack + Poetry (pip 대신)",
+  "defaults": {
+    "db_kind": "mongodb",
+    "enable_shadcn": "true",
+    "enable_msw": "true"
+  },
+  "assets": [
+    "cursor-rules",
+    "gitignore-base",
+    "data-volumes",
+    "lint-format",
+    "ts-base",
+    "precommit",
+    "webapp-backend",
+    "python-webapp-poetry",
+    "pytest-config",
+    "webapp-frontend",
+    "shadcn",
+    "docker-compose",
+    "reverse-proxy-caddy",
+    "ops-scripts",
+    "env-multi",
+    "ci-basic",
+    "e2e-playwright",
+    "docs-basic"
+  ]
+}

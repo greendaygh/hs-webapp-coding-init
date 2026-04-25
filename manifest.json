@@ -1,0 +1,199 @@
+{
+  "schema": "hs-webapp-coding-init/manifest@1",
+  "version": "0.1.0",
+  "assets": [
+    {
+      "id": "cursor-rules",
+      "description": "Cursor rules (TDD/auto-versioning)",
+      "category": "rules",
+      "actions": [
+        { "type": "copy", "from": "assets/cursor-rules", "to": "{{cursor_dir}}/rules" }
+      ]
+    },
+    {
+      "id": "gitignore-base",
+      "description": "Base .gitignore (Node/Python/IDE/env)",
+      "category": "vcs",
+      "actions": [
+        {
+          "type": "append",
+          "to": ".gitignore",
+          "source": "assets/gitignore/base.txt",
+          "section": "hs-webapp-coding-init/base",
+          "dedupe": true
+        }
+      ]
+    },
+    {
+      "id": "data-volumes",
+      "description": "Append DB data dirs to .gitignore",
+      "category": "vcs",
+      "actions": [
+        {
+          "type": "append",
+          "to": ".gitignore",
+          "source": "assets/gitignore/data-volumes.txt",
+          "section": "hs-webapp-coding-init/data-volumes",
+          "dedupe": true
+        }
+      ]
+    },
+    {
+      "id": "lint-format",
+      "description": "Editorconfig + Prettier + ESLint + Ruff + MyPy",
+      "category": "quality",
+      "actions": [
+        { "type": "copy", "from": "assets/lint-format/.editorconfig", "to": ".editorconfig" },
+        { "type": "copy", "from": "assets/lint-format/.prettierrc.json", "to": ".prettierrc.json" },
+        { "type": "copy", "from": "assets/lint-format/.prettierignore", "to": ".prettierignore" },
+        { "type": "copy", "from": "assets/lint-format/.eslintrc.cjs", "to": ".eslintrc.cjs" },
+        { "type": "copy", "from": "assets/lint-format/ruff.toml", "to": "ruff.toml" },
+        { "type": "copy", "from": "assets/lint-format/mypy.ini", "to": "mypy.ini" }
+      ]
+    },
+    {
+      "id": "ts-base",
+      "description": "Root tsconfig.base.json",
+      "category": "quality",
+      "actions": [
+        { "type": "copy", "from": "assets/ts/tsconfig.base.json", "to": "tsconfig.base.json" }
+      ]
+    },
+    {
+      "id": "precommit",
+      "description": "pre-commit + lint-staged",
+      "category": "quality",
+      "actions": [
+        { "type": "copy", "from": "assets/precommit/.pre-commit-config.yaml.tpl", "to": ".pre-commit-config.yaml" },
+        { "type": "copy", "from": "assets/precommit/lint-staged.config.js", "to": "lint-staged.config.js" }
+      ],
+      "postMessage": "pre-commit hook 활성화: pip install pre-commit && pre-commit install"
+    },
+    {
+      "id": "shadcn",
+      "description": "shadcn/ui 설정",
+      "category": "frontend",
+      "when": "{{enable_shadcn}}",
+      "actions": [
+        { "type": "copy", "from": "assets/shadcn/components.json", "to": "{{frontend_dir}}/components.json" }
+      ]
+    },
+    {
+      "id": "webapp-backend",
+      "description": "FastAPI backend (DDD scaffold)",
+      "category": "backend",
+      "actions": [
+        { "type": "copy", "from": "assets/webapp-backend", "to": "{{backend_dir}}" }
+      ]
+    },
+    {
+      "id": "webapp-frontend",
+      "description": "React + Vite frontend (features-based)",
+      "category": "frontend",
+      "actions": [
+        { "type": "copy", "from": "assets/webapp-frontend", "to": "{{frontend_dir}}" },
+        { "type": "merge-json", "to": "{{frontend_dir}}/package.json", "source": "assets/webapp-frontend-overlay/package.scripts.json.tpl" }
+      ]
+    },
+    {
+      "id": "python-webapp-poetry",
+      "description": "Backend pyproject.toml (Poetry)",
+      "category": "backend",
+      "actions": [
+        { "type": "copy", "from": "assets/python-webapp/poetry/pyproject.toml.tpl", "to": "{{backend_dir}}/pyproject.toml" }
+      ]
+    },
+    {
+      "id": "python-webapp-pip",
+      "description": "Backend pyproject.toml + requirements (pip)",
+      "category": "backend",
+      "actions": [
+        { "type": "copy", "from": "assets/python-webapp/pip/pyproject.toml.tpl", "to": "{{backend_dir}}/pyproject.toml" },
+        { "type": "copy", "from": "assets/python-webapp/pip/requirements.txt", "to": "{{backend_dir}}/requirements.txt" },
+        { "type": "copy", "from": "assets/python-webapp/pip/requirements-dev.txt", "to": "{{backend_dir}}/requirements-dev.txt" }
+      ]
+    },
+    {
+      "id": "python-webapp-conda",
+      "description": "Backend environment.yml (conda)",
+      "category": "backend",
+      "actions": [
+        { "type": "copy", "from": "assets/python-webapp/conda/environment.yml.tpl", "to": "{{backend_dir}}/environment.yml" }
+      ]
+    },
+    {
+      "id": "pytest-config",
+      "description": "pytest.ini with coverage",
+      "category": "backend",
+      "actions": [
+        { "type": "copy", "from": "assets/webapp-backend/pytest.ini.tpl", "to": "{{backend_dir}}/pytest.ini" }
+      ]
+    },
+    {
+      "id": "docker-compose",
+      "description": "docker-compose.{db-only,dev,prod}.yml + Dockerfiles + nginx",
+      "category": "ops",
+      "actions": [
+        { "type": "copy", "from": "assets/docker", "to": "assets/docker" }
+      ]
+    },
+    {
+      "id": "reverse-proxy-caddy",
+      "description": "Caddyfile.prod (TLS + path routing)",
+      "category": "ops",
+      "actions": [
+        { "type": "copy", "from": "assets/reverse-proxy/Caddyfile.prod.tpl", "to": "Caddyfile.prod" }
+      ]
+    },
+    {
+      "id": "ops-scripts",
+      "description": "scripts/{start,stop}-{db,dev,prod}.sh + validate-env + backup + test-all",
+      "category": "ops",
+      "actions": [
+        { "type": "copy", "from": "assets/ops-scripts", "to": "scripts" }
+      ],
+      "postMessage": "스크립트 실행 권한 부여: chmod +x scripts/*.sh"
+    },
+    {
+      "id": "env-multi",
+      "description": ".env.{development,staging,production,test}.example",
+      "category": "ops",
+      "actions": [
+        { "type": "copy", "from": "assets/env", "to": "." }
+      ]
+    },
+    {
+      "id": "ci-basic",
+      "description": ".github/workflows/ci.yml",
+      "category": "ci",
+      "actions": [
+        { "type": "copy", "from": "assets/ci/ci.yml.tpl", "to": ".github/workflows/ci.yml" }
+      ]
+    },
+    {
+      "id": "e2e-playwright",
+      "description": "Playwright E2E (config + smoke + helpers + fixtures)",
+      "category": "e2e",
+      "actions": [
+        { "type": "copy", "from": "assets/e2e", "to": "e2e" }
+      ]
+    },
+    {
+      "id": "docs-basic",
+      "description": "README/CHANGELOG/LICENSE/GETTING_STARTED/DEVELOPMENT/TESTING/ENV_SETUP/DEPLOYMENT/HARNESS/INDEX",
+      "category": "docs",
+      "actions": [
+        { "type": "copy", "from": "assets/docs/README.md.tpl", "to": "README.md" },
+        { "type": "copy", "from": "assets/docs/CHANGELOG.md.tpl", "to": "CHANGELOG.md" },
+        { "type": "copy", "from": "assets/docs/LICENSE.tpl", "to": "LICENSE" },
+        { "type": "copy", "from": "assets/docs/GETTING_STARTED.md.tpl", "to": "docs/GETTING_STARTED.md" },
+        { "type": "copy", "from": "assets/docs/DEVELOPMENT.md.tpl", "to": "docs/DEVELOPMENT.md" },
+        { "type": "copy", "from": "assets/docs/TESTING.md.tpl", "to": "docs/TESTING.md" },
+        { "type": "copy", "from": "assets/docs/ENV_SETUP.md.tpl", "to": "docs/ENV_SETUP.md" },
+        { "type": "copy", "from": "assets/docs/DEPLOYMENT.md.tpl", "to": "docs/DEPLOYMENT.md" },
+        { "type": "copy", "from": "assets/docs/HARNESS.md.tpl", "to": "docs/HARNESS.md" },
+        { "type": "copy", "from": "assets/docs/INDEX.md", "to": "docs/INDEX.md" }
+      ]
+    }
+  ]
+}

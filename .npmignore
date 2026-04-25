@@ -1,0 +1,11 @@
+src/
+node_modules/
+.github/
+*.tgz
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+.prettierrc.json
+.prettierignore
+coverage/
+.gitignore

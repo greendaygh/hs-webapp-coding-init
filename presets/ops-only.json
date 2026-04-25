@@ -1,0 +1,11 @@
+{
+  "id": "ops-only",
+  "description": "기존 프로젝트에 docker/ops 자산만 추가",
+  "assets": [
+    "data-volumes",
+    "docker-compose",
+    "reverse-proxy-caddy",
+    "ops-scripts",
+    "env-multi"
+  ]
+}
