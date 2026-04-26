@@ -15,6 +15,8 @@ pydantic = "^2.9.0"
 pydantic-settings = "^2.5.0"
 motor = "^3.5.0"
 httpx = "^0.27.0"
+authlib = "^1.3.0"
+itsdangerous = "^2.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"
@@ -26,6 +28,7 @@ factory-boy = "^3.3.0"
 faker = "^30.0.0"
 bandit = { extras = ["toml"], version = "^1.7" }
 pip-audit = "^2.7"
+respx = "^0.21.0"
 
 [build-system]
 requires = ["poetry-core"]

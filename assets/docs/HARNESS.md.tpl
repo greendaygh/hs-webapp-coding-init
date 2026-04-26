@@ -16,7 +16,8 @@
 | **Data** | bind-mount volumes, `backup-prod-db.sh` + `restore-prod-db.sh` (짝), `tests/factories.py`(factory_boy + faker) | 데이터 영속/백업/복원 자리 + 데이터 생성 (보관·회전·오프사이트·암호화·스케줄·알림 정책은 [DEPLOYMENT.md](DEPLOYMENT.md#백업--복원) 체크리스트로 위임) |
 | **Reproducibility** | `.tool-versions` (asdf/mise — Node {{node_version}} / Python {{python_version}}) | 도구 버전 단일 출처 |
 | **Security** | `security.yml` (gitleaks + bandit + pip-audit + npm audit, push/PR/weekly), bandit pre-commit, `--allow-exec` opt-in | 시크릿/SAST/CVE 자동 차단 |
-| **Onboarding** | `GETTING_STARTED.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `HARNESS.md`(이 문서), `README.en.md`, `Makefile` | 새 합류자 30분 컷 |
+| **Auth** | `authlib` OIDC 클라이언트, 서명 쿠키 세션(`SessionMiddleware`), `/auth/*` 라우터, Frontend `AuthContext` + `ProtectedRoute`, dev 전용 mock provider | 사용자 인증 자리 (Provider 추가는 [AUTH.md](AUTH.md) 참조) |
+| **Onboarding** | `GETTING_STARTED.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `HARNESS.md`(이 문서), `AUTH.md`, `README.en.md`, `Makefile` | 새 합류자 30분 컷 |
 
 ## 사용 패턴
 

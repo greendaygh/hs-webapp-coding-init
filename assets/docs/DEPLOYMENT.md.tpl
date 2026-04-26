@@ -106,6 +106,23 @@ GitHub Repository → **Settings** → **Secrets and variables** → **Actions**
 2. **Required reviewers**에 검토자를 추가, 필요 시 **Deployment branches**를 `main` / 태그 패턴으로 제한.
 3. `staging` Environment도 동일 방식으로 만들어 둘 수 있습니다 (선택).
 
+### OIDC 시크릿 체크리스트
+
+OIDC 소셜 로그인 자산이 기본 포함되어 있어, **production/staging 양쪽**에 다음 항목이
+설정되어 있어야 정상 기동합니다. (`validate-env.sh` 가 일부를 강제 검증.)
+
+| 변수 | 결정 / 생성 방법 |
+| --- | --- |
+| `SESSION_SECRET` | `openssl rand -hex 32` (32바이트 이상). 환경마다 다른 값. |
+| `SESSION_TTL_HOURS` | 정책 결정 사항 (기본 24). 짧을수록 안전, 길수록 UX 편함. |
+| `OIDC_REDIRECT_BASE` | **반드시 HTTPS** 의 외부 노출 도메인. e.g. `https://{{proxy_domain}}`. |
+| `OIDC_POST_LOGIN_REDIRECT` | 로그인 성공 후 SPA 진입점. 보통 `OIDC_REDIRECT_BASE` 와 동일 + `/`. |
+| `OIDC_MOCK_ENABLED` | production/staging 에선 **반드시 `false`**. `true` 면 startup fail-fast. |
+| `OIDC_GOOGLE_CLIENT_ID` / `_SECRET` | Google Cloud Console → OAuth Web client. Authorized redirect URI 에 `${OIDC_REDIRECT_BASE}/auth/callback/google` 추가. |
+| `OIDC_GITHUB_CLIENT_ID` / `_SECRET` | (옵션) GitHub Developer settings → OAuth App. Callback URL 에 `${OIDC_REDIRECT_BASE}/auth/callback/github`. |
+
+전체 등록 절차/보안 체크리스트는 [AUTH.md](AUTH.md) 참조.
+
 서버 사전 준비 (한 번만):
 
 ```bash

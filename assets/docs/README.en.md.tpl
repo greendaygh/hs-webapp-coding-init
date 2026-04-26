@@ -26,7 +26,7 @@ make dev            # start the full dev stack
 e2e/               Playwright
 assets/docker/     Dockerfiles + docker-compose.{db-only,dev,staging,prod}.yml
 scripts/           start/stop-{db,dev,staging,prod}.sh, validate-env.sh, test-all.sh
-docs/              GETTING_STARTED, ARCHITECTURE, TESTING, ENV_SETUP, DEPLOYMENT, HARNESS, CONTRIBUTING
+docs/              GETTING_STARTED, ARCHITECTURE, TESTING, ENV_SETUP, DEPLOYMENT, HARNESS, AUTH, CONTRIBUTING
 .github/workflows/ ci.yml + security.yml + deploy-{staging,production}.yml
 .cursor/rules/     TDD + auto-versioning rules
 .tool-versions     asdf/mise: nodejs / python pinned

@@ -17,7 +17,7 @@ set -a
 source "$env_file"
 set +a
 
-required=(ENVIRONMENT BACKEND_PORT API_PREFIX SECRET_KEY MONGODB_URI MONGODB_DB)
+required=(ENVIRONMENT BACKEND_PORT API_PREFIX SECRET_KEY MONGODB_URI MONGODB_DB SESSION_SECRET)
 missing=()
 for k in "${required[@]}"; do
   if [[ -z "${!k:-}" ]]; then
@@ -37,6 +37,12 @@ if [[ "$env_name" == "production" || "$env_name" == "staging" ]]; then
     echo "✗ CHANGE_ME placeholders detected in $env_file (refusing to start ${env_name}):" >&2
     echo "$changeme" >&2
     exit 3
+  fi
+
+  # OIDC mock provider 는 dev/test 전용. prod/staging 에서 켜지면 즉시 차단.
+  if [[ "${OIDC_MOCK_ENABLED:-false}" == "true" ]]; then
+    echo "✗ OIDC_MOCK_ENABLED=true is not allowed in ${env_name}. Set OIDC_MOCK_ENABLED=false." >&2
+    exit 4
   fi
 fi
 

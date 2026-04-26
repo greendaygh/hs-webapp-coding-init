@@ -51,6 +51,16 @@ make dev
 - Backend health(live): <http://localhost:{{backend_dev_port}}{{health_endpoint}}/live>
 - Backend API docs: <http://localhost:{{backend_dev_port}}/docs>
 
+## 5-1. 1분 컷 로그인 체험
+
+기본 자산에 OIDC 소셜 로그인이 포함되어 있고, dev 에서는 별도 IdP 등록 없이 mock provider 로 동작합니다.
+
+1. <http://localhost:{{frontend_dev_port}}/login> 접속.
+2. **Mock 로그인 (dev)** 영역에 이메일 입력 후 버튼.
+3. 보호 페이지(`/`) 진입 + 헤더에 사용자 메뉴 + 로그아웃 버튼 확인.
+
+실제 Google/GitHub 등록 절차는 [AUTH.md](AUTH.md) 의 *Provider 등록 walkthrough* 참조.
+
 ## 6. (선택) Staging 스택 시도
 
 production 발급으로 가기 전에 **Let's Encrypt staging CA**(인증서가 브라우저에 untrusted, 발급 rate-limit 없음)로 리허설할 수 있습니다.
@@ -83,4 +93,5 @@ push/PR 시 GitHub Actions의 `security.yml`이 동일 검사를 자동 수행�
 - [ARCHITECTURE.md](ARCHITECTURE.md) — DDD 4층 / features 구조 / 배포 토폴로지
 - [CONTRIBUTING.md](CONTRIBUTING.md) — TDD 사이클 / PR 가이드
 - [HARNESS.md](HARNESS.md) — 하네스 엔지니어링 적용
+- [AUTH.md](AUTH.md) — OIDC Provider 등록 + 세션 보안 체크리스트
 - [DEPLOYMENT.md](DEPLOYMENT.md) — 스테이징/프로덕션 배포 + CI/CD 시크릿

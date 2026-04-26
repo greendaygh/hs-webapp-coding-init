@@ -89,6 +89,10 @@ src/
 - `/health/ready` — 등록된 dependency check가 모두 통과해야 200, 하나라도 실패 시 503 + 어떤 검사가 실패했는지 응답에 포함.
 - 구조화 로그(JSON, 프로덕션) + Request ID 컨텍스트(`X-Request-Id` 헤더 또는 자동 생성)로 분산 요청 추적.
 
+## 인증 (Phase 5)
+
+`User`/`Session` 도메인이 `domain/user.py` 에 정의되어 있고, OIDC 콜백 처리 + 세션 발급/조회/폐기 유스케이스가 `application/auth_service.py` 에 모입니다. `infrastructure/user_repo.py` / `session_repo.py` 가 MongoDB 어댑터이며 `sessions` 컬렉션의 `expires_at` 에 TTL 인덱스가 걸려 만료 세션을 자동 정리합니다. SPA 는 `apiClient`(`withCredentials: true`) + `AuthContext` + `ProtectedRoute` 패턴으로 동일한 쿠키 세션을 공유합니다. 자세한 흐름은 [AUTH.md](AUTH.md) 참조.
+
 ## 보안 (Phase 2)
 
 - gitleaks(시크릿), bandit(SAST), pip-audit/npm audit(CVE) 4종을 push/PR/매주 정기 실행.

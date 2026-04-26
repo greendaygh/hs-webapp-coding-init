@@ -7,6 +7,7 @@ from typing import Awaitable, Callable
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.sessions import SessionMiddleware
 
 from {{app_module}}.config import get_settings
 from {{app_module}}.api.v1.router import api_router
@@ -58,7 +59,45 @@ async def run_dependency_checks(app: FastAPI) -> tuple[bool, dict[str, str]]:
     return all_ok, results
 
 
+def _enforce_auth_safety(s) -> None:  # noqa: ANN001
+    """OIDC_MOCK_ENABLED=true 는 dev/test 에서만 허용. prod/staging 에서 켜지면 부팅 실패."""
+    if s.oidc_mock_enabled and s.environment in ("production", "staging"):
+        raise RuntimeError(
+            f"OIDC_MOCK_ENABLED=true is not allowed in {s.environment}. "
+            "Set OIDC_MOCK_ENABLED=false."
+        )
+
+
+def _wire_auth(app: FastAPI, s) -> None:  # noqa: ANN001
+    """auth_service 와 OAuth client 를 app.state 에 등록.
+
+    test 환경은 conftest 가 메모리 어댑터로 덮어쓴다 (외부 Mongo 의존성 제거).
+    """
+    if s.environment == "test":
+        return
+    try:  # 운영 경로: Motor 기반.
+        from motor.motor_asyncio import AsyncIOMotorClient
+
+        from {{app_module}}.application.auth_service import AuthService
+        from {{app_module}}.infrastructure.oidc_clients import build_oauth
+        from {{app_module}}.infrastructure.session_repo import MongoSessionRepo
+        from {{app_module}}.infrastructure.user_repo import MongoUserRepo
+
+        client = AsyncIOMotorClient(s.mongodb_uri)
+        db = client[s.mongodb_db]
+        user_repo = MongoUserRepo(db)
+        session_repo = MongoSessionRepo(db)
+        app.state.auth_service = AuthService(user_repo, session_repo, s.session_ttl_hours)
+        app.state.oauth = build_oauth(s)
+        app.state.user_repo = user_repo
+        app.state.session_repo = session_repo
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("auth wiring failed (will be inert until configured): %s", exc)
+
+
 def create_app() -> FastAPI:
+    _enforce_auth_safety(settings)
+
     app = FastAPI(
         title="{{project_name}}",
         description="{{description}}",
@@ -68,6 +107,14 @@ def create_app() -> FastAPI:
     )
     app.state.dependency_checks = default_dependency_checks()
 
+    # OIDC state 보관용 짧은 쿠키 (authlib 가 사용). 세션 쿠키와 별도.
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings.session_secret,
+        same_site="lax",
+        https_only=settings.environment in ("staging", "production"),
+        max_age=600,  # 10분 — OIDC 콜백 라운드트립용
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
@@ -76,6 +123,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    _wire_auth(app, settings)
     app.include_router(api_router, prefix=settings.api_prefix)
 
     @app.get("{{health_endpoint}}")

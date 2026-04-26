@@ -11,6 +11,8 @@ dependencies:
       - pydantic-settings>=2.5
       - motor>=3.5
       - httpx>=0.27
+      - authlib>=1.3
+      - itsdangerous>=2.2
       - pytest>=8.3
       - pytest-asyncio>=0.24
       - pytest-cov>=5.0
@@ -20,3 +22,4 @@ dependencies:
       - faker>=30.0
       - bandit[toml]>=1.7
       - pip-audit>=2.7
+      - respx>=0.21

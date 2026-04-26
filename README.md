@@ -14,6 +14,7 @@
 - `.env` 4환경 + `validate-env.sh`(`CHANGE_ME` fail-fast).
 - pre-commit(ruff/prettier/eslint/bandit/pytest fail-fast) + GitHub Actions(ci + security + deploy).
 - Playwright + MSW + factory_boy 데이터 팩토리.
+- **OIDC 소셜 로그인 자산**(authlib + 서명 쿠키 세션 + AuthContext + ProtectedRoute, dev mock provider).
 - Cursor TDD/auto-versioning rules + 운영 스크립트 + Makefile + 9종 문서 카탈로그(영문 README 포함).
 
 ## Quick Start
@@ -32,7 +33,7 @@ my-app/
 ├── e2e/              Playwright
 ├── assets/docker/    Dockerfile.{python,node}, docker-compose.{db-only,dev,staging,prod}.yml
 ├── scripts/          start/stop-{db,dev,staging,prod}.sh, validate-env.sh, test-all.sh, backup-prod-db.sh
-├── docs/             GETTING_STARTED, ARCHITECTURE, DEVELOPMENT, TESTING, ENV_SETUP, DEPLOYMENT, HARNESS, CONTRIBUTING
+├── docs/             GETTING_STARTED, ARCHITECTURE, DEVELOPMENT, TESTING, ENV_SETUP, DEPLOYMENT, HARNESS, AUTH, CONTRIBUTING
 ├── .cursor/rules/    TDD / auto-versioning rules
 ├── .github/workflows/  ci.yml + security.yml + deploy-{staging,production}.yml
 ├── .tool-versions    asdf/mise: nodejs / python pinned
@@ -88,7 +89,7 @@ make dev            # http://localhost:5173
 | `cursor-rules-only` | Cursor rules만 |
 | `ops-only` | 기존 프로젝트에 docker/ops 자산만 추가 |
 
-## 8개 하네스 (Harness Engineering)
+## 9개 하네스 (Harness Engineering)
 
 `webapp-fullstack` preset이 설치하는 자동화 골격:
 
@@ -101,9 +102,11 @@ make dev            # http://localhost:5173
 | **Deploy** | `start-{staging,prod}.sh`, `deploy-{staging,production}.yml` (SSH rsync + smoke + GitHub Environment 게이트) |
 | **Environment** | `.env.<env>.example` + `validate-env.sh` (CHANGE_ME fail-fast) |
 | **Observability** | `logging_config.py` (dictConfig + Request ID), `/health/live`, `/health/ready`(pluggable dependency checks), Frontend `ErrorBoundary` |
+| **Data** | bind-mount volumes, `backup-prod-db.sh` + `restore-prod-db.sh` 짝, factory_boy/faker 데이터 팩토리 |
 | **Security** | `security.yml`(gitleaks + bandit + pip-audit + npm audit, push/PR/weekly), bandit pre-commit, `--allow-exec` opt-in |
+| **Auth** | `authlib` OIDC 클라이언트, 서명 쿠키 세션, `/auth/*` 라우터, AuthContext + ProtectedRoute, dev mock provider — Provider 추가는 `docs/AUTH.md` 참조 |
 | **Reproducibility** | `.tool-versions` (asdf/mise — Node / Python 버전 단일 출처) |
-| **Onboarding** | README(KO/EN) + 9종 docs + Makefile + Cursor rules → 30분 컷 |
+| **Onboarding** | README(KO/EN) + 10종 docs(AUTH 포함) + Makefile + Cursor rules → 30분 컷 |
 
 ## Python 패키지 매니저 3변형
 

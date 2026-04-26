@@ -213,7 +213,7 @@
     },
     {
       "id": "docs-basic",
-      "description": "README(+ EN)/CHANGELOG/LICENSE/GETTING_STARTED/DEVELOPMENT/TESTING/ENV_SETUP/DEPLOYMENT/HARNESS/ARCHITECTURE/CONTRIBUTING/INDEX",
+      "description": "README(+ EN)/CHANGELOG/LICENSE/GETTING_STARTED/DEVELOPMENT/TESTING/ENV_SETUP/DEPLOYMENT/HARNESS/AUTH/ARCHITECTURE/CONTRIBUTING/INDEX",
       "category": "docs",
       "actions": [
         { "type": "copy", "from": "assets/docs/README.md.tpl", "to": "README.md" },
@@ -226,6 +226,7 @@
         { "type": "copy", "from": "assets/docs/ENV_SETUP.md.tpl", "to": "docs/ENV_SETUP.md" },
         { "type": "copy", "from": "assets/docs/DEPLOYMENT.md.tpl", "to": "docs/DEPLOYMENT.md" },
         { "type": "copy", "from": "assets/docs/HARNESS.md.tpl", "to": "docs/HARNESS.md" },
+        { "type": "copy", "from": "assets/docs/AUTH.md.tpl", "to": "docs/AUTH.md" },
         { "type": "copy", "from": "assets/docs/ARCHITECTURE.md.tpl", "to": "docs/ARCHITECTURE.md" },
         { "type": "copy", "from": "assets/docs/CONTRIBUTING.md.tpl", "to": "docs/CONTRIBUTING.md" },
         { "type": "copy", "from": "assets/docs/INDEX.md", "to": "docs/INDEX.md" }

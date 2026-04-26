@@ -2,6 +2,38 @@
 
 이 프로젝트의 모든 주요 변경사항은 이 파일에 기록됩니다. 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고, 버저닝은 [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [v0.3.0] - 2026-04-27
+
+OIDC Auth 하네스 기본 포함. 풀스택 preset 에 사용자 인증 자리(소셜 로그인 + 서명 쿠키 세션)를 표준 자산으로 추가. 비밀번호 저장은 IdP(Google/GitHub 등)에 위임하고, 백엔드는 HTTP-only Secure SameSite=Lax 쿠키 기반 서버 세션을 발급. dev 에서는 mock provider 로 IdP 등록 없이 즉시 로그인 가능.
+
+### Added
+- **백엔드 도메인/유스케이스**: `domain/user.py`(`User`/`Session`), `application/auth_service.py.tpl`(`AuthService` + `UserRepo`/`SessionRepo` Protocol). 단위 테스트 2종 + 인메모리 fake repo 픽스처.
+- **백엔드 인프라**: `infrastructure/user_repo.py.tpl`(MongoDB unique `(provider,sub)` 인덱스), `session_repo.py.tpl`(`expires_at` TTL 인덱스), `oidc_clients.py.tpl`(authlib `OAuth` — Google/GitHub 환경변수 유무로 조건부 등록 + dev mock).
+- **백엔드 API**: `api/v1/auth.py.tpl` 서브라우터 — `GET /auth/providers`, `GET /auth/me`, `POST /auth/logout`, `GET /auth/login/{provider}`, `GET /auth/callback/{provider}`, `GET /auth/login/mock`(dev only). `api/dependencies.py.tpl` (`get_auth_service`/`get_current_user`/`require_user`). 통합 테스트(`test_auth_api.py`)는 인메모리 fake 로 isolated.
+- **백엔드 main**: `SessionMiddleware`(`itsdangerous` 서명) + `_enforce_auth_safety`(prod/staging 에서 `OIDC_MOCK_ENABLED=true` 면 startup fail-fast) + `_wire_auth`(서비스/OAuth 와이어링).
+- **프런트 features/auth**: `AuthContext`/`useAuth`/`LoginButton`/`UserMenu`/`ProtectedRoute`/`LoginPage`/`api.ts.tpl` + vitest 3종(MSW 사용). `App.tsx.tpl` 을 `AuthProvider` + `react-router-dom` 으로 감싸고 `/login` 라우트 + 보호 페이지 패턴으로 재구성. `apiClient.ts.tpl` 에 `withCredentials: true` 추가.
+- **MSW handlers**: `/api/v1/auth/me`, `/auth/providers`, `/auth/logout`, `/auth/login/mock` 모킹.
+- **E2E**: `helpers/login.ts.tpl`(`loginAsMock(page, email)`) + `smoke.spec.ts.tpl` 에 anonymous → /login 리다이렉트 + mock 로그인 → 보호 페이지 진입 케이스 2종.
+- **신규 환경변수 9종** (`.env.{development,staging,production,test}.example.tpl` 4종 SSOT 갱신): `SESSION_SECRET`(required), `SESSION_TTL_HOURS`, `OIDC_REDIRECT_BASE`, `OIDC_POST_LOGIN_REDIRECT`, `OIDC_MOCK_ENABLED`, `OIDC_GOOGLE_CLIENT_ID/SECRET`, `OIDC_GITHUB_CLIENT_ID/SECRET`. `validate-env.sh.tpl` `required` 에 `SESSION_SECRET` 추가 + prod/staging 에서 `OIDC_MOCK_ENABLED=true` 면 fail-fast.
+- **백엔드 의존성**: `authlib>=1.3`, `itsdangerous>=2.2` (3 매니저: pip/poetry/conda). 개발 의존성 `respx>=0.21`.
+- **`docs/AUTH.md`** 신규 자산: 흐름 mermaid, 1분 컷 (dev), Provider 등록 walkthrough(Google/GitHub + 새 IdP 추가 패턴), 쿠키/CSRF 정책, 보안 체크리스트, FAQ, SSOT 매트릭스.
+
+### Changed
+- **`docs/HARNESS.md`** 에 **Auth** 행 추가 (8개 → 9개 하네스).
+- **`docs/DEPLOYMENT.md`** "Deploy 시크릿 체크리스트" 다음에 **OIDC 시크릿 체크리스트** 표 추가.
+- **`docs/GETTING_STARTED.md`** 에 *5-1. 1분 컷 로그인 체험* 단계 + AUTH.md 링크.
+- **`docs/ARCHITECTURE.md`** 에 *인증 (Phase 5)* 단락.
+- **`docs/INDEX.md`** 에 AUTH.md/ARCHITECTURE.md/CONTRIBUTING.md 항목.
+- **패키지 `README.md`** 8개 → 9개 하네스 표, Auth/Data 행, AUTH 문서 카탈로그 반영. `README.en.md.tpl` 도 동일.
+- `webapp-frontend` 자산이 `react-router-dom@^6.27` 을 표준 dependency 로 사용 (이미 overlay 에 존재).
+
+### Notes
+- 매니페스트/preset JSON 변경 0 — 기존 `webapp-backend`/`webapp-frontend`/`env-multi`/`ops-scripts`/`docs-basic` 자산을 *확장*하는 방식. "default in fullstack" 의도와 일치.
+- MongoDB(`db_kind=mongodb`) 가 default 인 환경에서만 동작. 다른 DB 사용 시 `infrastructure/{user_repo,session_repo}.py` 두 파일을 교체하면 됨 (AUTH.md 안내).
+- 회원가입 폼/이메일 인증/비밀번호 재설정/역할(RBAC) 은 비범위 — IdP 위임 또는 후속 기능.
+- 회귀 테스트 추가 (백엔드 unit 2 + integration 1 + 프런트 vitest 3, 기존 70개 위에 가산).
+- minor 범프 사유: 신규 의존성 4종(authlib/itsdangerous/respx/react-router-dom) + 신규 환경변수 9종 + 패키지 표면(라우트/Settings/`/auth/*`) 변경.
+
 ## [v0.2.1] - 2026-04-26
 
 Backup 하네스 비대칭 결함 보강. `mongodump`만 있고 `mongorestore` 짝이 없던 구조를 정리하고, 보관·회전·오프사이트·암호화·스케줄·알림 같은 앱-특정 정책은 강제하지 않고 운영자가 결정하도록 체크리스트로 위임.
