@@ -2,6 +2,22 @@
 
 이 프로젝트의 모든 주요 변경사항은 이 파일에 기록됩니다. 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고, 버저닝은 [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [v0.2.1] - 2026-04-26
+
+Backup 하네스 비대칭 결함 보강. `mongodump`만 있고 `mongorestore` 짝이 없던 구조를 정리하고, 보관·회전·오프사이트·암호화·스케줄·알림 같은 앱-특정 정책은 강제하지 않고 운영자가 결정하도록 체크리스트로 위임.
+
+### Added
+- **`scripts/restore-prod-db.sh`** 자산 (`assets/ops-scripts/restore-prod-db.sh.tpl`): `<timestamp_dir>` 인자 + `--yes` 비대화 옵션, 디렉터리/`dump.archive` 존재 검증, 컨테이너 가동 확인, 확인 prompt, `docker cp` + `mongorestore --archive --gzip --drop`, EXIT trap 으로 컨테이너 내 임시 파일 정리.
+- **Makefile `restore` 타깃**: `make restore TS=<timestamp_dir> [YES=1]` 형태. `TS` 누락 시 명확한 usage 에러.
+- **`docs/DEPLOYMENT.md` 백업/복원 섹션**: 제공 자산(backup + restore 짝) 표, 사용 예시 블록, 그리고 패키지가 정하지 않는 9개 항목(RPO/RTO/보관/오프사이트/암호화/무결성/스케줄/알림/복원 리허설) 체크리스트 — 운영 시작 전 모두 결정하도록 강제하는 톤.
+
+### Changed
+- **`docs/HARNESS.md` Data 행**: 자산 컬럼을 `backup-prod-db.sh + restore-prod-db.sh (짝)` 형태로 갱신, 정책 결정은 DEPLOYMENT 체크리스트로 위임함을 앵커 링크와 함께 명시.
+
+### Notes
+- 신규 변수/preset/외부 의존성 없음. backend/frontend/CI/Docker/Caddy 변경 없음.
+- 기존 `backup-prod-db.sh.tpl`은 건드리지 않음 — 무결성 검증·회전은 앱마다 달라 wrapper로 운영자가 추가하도록 위임.
+
 ## [v0.2.0] - 2026-04-26
 
 Phase 5 — Onboarding 풀세트. 4번의 patch 릴리스(v0.1.1~v0.1.4)에 누적된 v0.2 하네스를 문서·진입점 차원에서 정리하는 minor 범프.

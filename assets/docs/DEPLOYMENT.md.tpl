@@ -28,7 +28,50 @@ Caddy가 자동으로 Let's Encrypt 인증서를 발급하고 HTTPS로 서비스
 
 - 프로덕션 DB는 `{{prod_data_dir}}/mongodb`에 bind mount.
 - 컨테이너 재시작/재빌드 후에도 데이터 유지.
-- 정기 백업: `bash scripts/backup-prod-db.sh` (cron 권장).
+
+## 백업 / 복원
+
+이 패키지는 백업/복원의 **자리(스크립트 짝)** 만 제공합니다. 보관 기간, 회전 주기,
+오프사이트 복제, 암호화, 알림, 스케줄링 같은 **정책은 앱마다 다르므로** 강제하지
+않습니다. 운영 시작 전 아래 체크리스트를 채우고 `RUNBOOK.md`(또는 본 문서)에 박제하세요.
+
+### 제공되는 자산
+
+| 스크립트 | 용도 |
+| --- | --- |
+| `scripts/backup-prod-db.sh` | `mongodump --archive --gzip` → `{{prod_backup_dir}}/<UTC_TS>/dump.archive` |
+| `scripts/restore-prod-db.sh` | 위 산출물을 `mongorestore --archive --gzip --drop`으로 되돌림 |
+
+### 사용 예시
+
+```bash
+# 백업 (수동/cron 모두 동일)
+make backup
+
+# 복원 (대상 디렉터리 지정 필수)
+make restore TS={{prod_backup_dir}}/20260426T091500Z
+
+# CI/cron 등 비대화 환경
+make restore TS={{prod_backup_dir}}/20260426T091500Z YES=1
+```
+
+> 경고: `restore`는 `mongorestore --drop`으로 기존 컬렉션을 삭제한 뒤 복원합니다.
+> 운영 DB 직접 실행 전 staging 에서 리허설하세요.
+
+### 백업 정책 결정 체크리스트
+
+아래 항목은 패키지가 정해 주지 않습니다. 운영 시작 전 모두 결정하고 문서로 남기세요.
+
+- [ ] **RPO** (허용 가능한 데이터 손실 시간) — 정해지지 않으면 `mongodump` 1일 1회 = RPO 24h.
+- [ ] **RTO** (목표 복구 시간) — 백업 크기와 네트워크/디스크 속도에 의존. 분기 1회 측정 권장.
+- [ ] **보관 기간 / 회전 정책** — 예: 일 7 / 주 4 / 월 12. 미설정 시 `{{prod_backup_dir}}` 디스크가 무한히 증가합니다. `find {{prod_backup_dir}} -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf {} +` 같은 한 줄을 cron 에 추가하면 14일 회전이 됩니다.
+- [ ] **오프사이트 복제** — 본 패키지 미포함. 동일 호스트만 갖고 있으면 단일 장애점입니다. `rclone copy {{prod_backup_dir}} remote:bucket/`, `aws s3 sync`, `rsync` 중 하나를 백업 직후 hook으로 추가하세요. **3-2-1 룰** (사본 3, 매체 2, 오프사이트 1) 권장.
+- [ ] **암호화** — 규제 산업(의료/금융)은 필수. `gpg --symmetric` / `age` / 클라우드 KMS 중 택1 후 backup 스크립트 wrapper에서 적용.
+- [ ] **무결성 검증** — 단순 `sha256sum dump.archive > dump.archive.sha256` 한 줄을 backup wrapper에서 추가하면 충분한 경우가 많음.
+- [ ] **스케줄링** — 호스트 cron, systemd timer, GitHub Actions schedule 중 택1. 호스트 cron 예시:
+      `0 3 * * * cd /srv/{{project_slug}} && bash scripts/backup-prod-db.sh >> backups/cron.log 2>&1`
+- [ ] **실패 알림** — 위 cron 라인은 실패해도 조용히 묻힙니다. Slack webhook / 이메일 / 모니터링 시스템 연동을 추가하세요.
+- [ ] **정기 복원 리허설** — 분기 1회 권장. staging 에 prod 백업을 `make restore TS=... YES=1` 로 복원해 동작 확인. **복원해 본 적 없는 백업은 백업이 아닙니다.**
 
 ## 무중단 업데이트
 

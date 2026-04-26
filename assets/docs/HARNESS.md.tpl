@@ -13,7 +13,7 @@
 | **Deploy** | `start-prod.sh`, `start-staging.sh`, compose `prod`/`staging`, `deploy-{staging,production}.yml` | 일괄 기동/종료 + SSH CI 배포 |
 | **Environment** | `.env.<env>` + `validate-env.sh` (CHANGE_ME fail-fast) | 변수 일원화 + fail-fast |
 | **Observability** | `logging_config.py` (dictConfig + Request ID), `/health`, `/health/live`, `/health/ready` (pluggable dependency checks), Frontend `ErrorBoundary` | 가용성/준비성 분리, 로그 컨텍스트 추적 |
-| **Data** | bind-mount volumes, `backup-prod-db.sh`, `tests/factories.py`(factory_boy + faker) | 데이터 영속/백업/생성 |
+| **Data** | bind-mount volumes, `backup-prod-db.sh` + `restore-prod-db.sh` (짝), `tests/factories.py`(factory_boy + faker) | 데이터 영속/백업/복원 자리 + 데이터 생성 (보관·회전·오프사이트·암호화·스케줄·알림 정책은 [DEPLOYMENT.md](DEPLOYMENT.md#백업--복원) 체크리스트로 위임) |
 | **Reproducibility** | `.tool-versions` (asdf/mise — Node {{node_version}} / Python {{python_version}}) | 도구 버전 단일 출처 |
 | **Security** | `security.yml` (gitleaks + bandit + pip-audit + npm audit, push/PR/weekly), bandit pre-commit, `--allow-exec` opt-in | 시크릿/SAST/CVE 자동 차단 |
 | **Onboarding** | `GETTING_STARTED.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `HARNESS.md`(이 문서), `README.en.md`, `Makefile` | 새 합류자 30분 컷 |

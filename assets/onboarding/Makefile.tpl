@@ -1,5 +1,5 @@
 .PHONY: help install dev db dev-stop db-stop test lint typecheck audit security \
-        staging staging-stop prod prod-stop validate backup clean
+        staging staging-stop prod prod-stop validate backup restore clean
 
 # ─────────────────────────────────────────────────────────────
 # {{project_name}} — 통합 작업 진입점.
@@ -64,6 +64,10 @@ prod-stop:           ## Production 스택 종료
 
 backup:              ## Production DB 백업
 	bash scripts/backup-prod-db.sh
+
+restore:             ## Production DB 복원 (TS=<timestamp_dir> 필수, 정책은 docs/DEPLOYMENT.md 체크리스트 참조)
+	@test -n "$(TS)" || (echo "usage: make restore TS=<timestamp_dir> [YES=1]" >&2; exit 2)
+	bash scripts/restore-prod-db.sh "$(TS)" $(if $(YES),--yes,)
 
 # ── Misc ────────────────────────────────────────────────────
 clean:               ## 빌드 산출물 / 캐시 정리
